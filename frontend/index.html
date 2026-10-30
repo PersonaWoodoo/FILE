@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080810">
+  <title>DocuFlow AI</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="loader" class="loader-overlay">
+    <div class="spinner"></div>
+    <div class="loader-text">Загрузка DocuFlow AI...</div>
+  </div>
+
+  <div id="app" class="app hidden">
+    
+    <!-- ГЛАВНАЯ -->
+    <section class="screen active" id="screen-home">
+      <header class="header">
+        <div class="brand"><div class="logo">DF</div> DocuFlow <span>AI</span></div>
+        <div class="user-pill" onclick="nav('profile')">
+          <div class="avatar" id="userAvatar">?</div>
+          <div class="u-info">
+            <div class="u-name" id="userName">Гость</div>
+            <div class="u-plan" id="userPlan">Free</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="hero">
+        <h1 id="greeting">Привет! 👋</h1>
+        <p>Что создадим сегодня?</p>
+        <div class="hero-card">
+          <div class="glow"></div>
+          <h2>✨ Создавайте с AI</h2>
+          <p>От идеи до готового файла за пару минут.</p>
+          <button class="btn btn-primary" onclick="nav('create')">🚀 Создать документ</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="val" id="statGens">—</div><div class="lbl">Генераций</div></div>
+        <div class="stat"><div class="val" id="statDocs">—</div><div class="lbl">Документов</div></div>
+        <div class="stat"><div class="val" id="statRefs">—</div><div class="lbl">Друзей</div></div>
+      </div>
+
+      <h3 class="title">Быстрый старт</h3>
+      <div class="grid-types" id="quickGrid"></div>
+
+      <h3 class="title">Последние</h3>
+      <div id="recentList" class="doc-list"></div>
+
+      <div class="premium-box" onclick="nav('premium')">
+        <div class="glow"></div>
+        <h3>💎 DocuFlow Premium</h3>
+        <p>Безлимит, все форматы, приоритет.</p>
+      </div>
+    </section>
+
+    <!-- СОЗДАНИЕ -->
+    <section class="screen" id="screen-create">
+      <header class="header compact">
+        <button class="btn-icon" onclick="nav('home')">←</button>
+        <h2>Создание</h2>
+      </header>
+
+      <div class="stepper" id="stepper">
+        <div class="step active" data-s="1">1</div>
+        <div class="step" data-s="2">2</div>
+        <div class="step" data-s="3">3</div>
+      </div>
+
+      <!-- Шаг 1 -->
+      <div class="panel active" id="panel-1">
+        <h3>Тип документа</h3>
+        <div class="grid-types" id="typeGrid"></div>
+        <div class="actions">
+          <button class="btn btn-primary" id="btnStep1" disabled onclick="toStep(2)">Далее →</button>
+        </div>
+      </div>
+
+      <!-- Шаг 2 -->
+      <div class="panel" id="panel-2">
+        <h3>Тема</h3>
+        <input type="text" id="inpTopic" class="input" placeholder="Например: Солнечная система" maxlength="500">
+        <h3>Что включить?</h3>
+        <textarea id="inpExtra" class="input" rows="3" placeholder="Необязательно..."></textarea>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="toStep(1)">← Назад</button>
+          <button class="btn btn-primary" id="btnStep2" disabled onclick="toStep(3)">Далее →</button>
+        </div>
+      </div>
+
+      <!-- Шаг 3 -->
+      <div class="panel" id="panel-3">
+        <h3>Настройки</h3>
+        <label class="field">Формат
+          <select id="selFormat" class="input">
+            <option value="pdf">PDF</option>
+            <option value="docx">DOCX</option>
+            <option value="pptx">PPTX</option>
+          </select>
+        </label>
+        <label class="field">Страниц/слайдов: <span id="lblPages">5</span>
+          <input type="range" id="rngPages" min="1" max="20" value="5" class="range">
+        </label>
+        <div class="switch-row">
+          <label class="switch"><input type="checkbox" id="optTitle" checked><span>Титульный лист</span></label>
+          <label class="switch"><input type="checkbox" id="optToc" checked><span>Содержание</span></label>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="toStep(2)">← Назад</button>
+          <button class="btn btn-primary" id="btnGenerate" onclick="startGenerate()">✨ Создать с AI</button>
+        </div>
+      </div>
+
+      <!-- ЭКРАН ГЕНЕРАЦИИ -->
+      <div class="panel" id="panel-loading">
+        <div class="gen-status">
+          <div class="spinner big"></div>
+          <h3 id="genStatusText">Подготовка задания...</h3>
+          <p class="sub">Обычно это занимает 15–40 секунд</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ДОКУМЕНТЫ -->
+    <section class="screen" id="screen-docs">
+      <header class="header compact"><h2>📂 Мои документы</h2></header>
+      <div id="docsList" class="doc-list"></div>
+    </section>
+
+    <!-- PREMIUM -->
+    <section class="screen" id="screen-premium">
+      <header class="header compact"><h2>💎 Premium</h2></header>
+      <div class="premium-list">
+        <div class="plan-card">
+          <h3>7 дней</h3><div class="price">50 ⭐</div>
+          <button class="btn btn-primary" onclick="buyPlan('premium_7')">Купить</button>
+        </div>
+        <div class="plan-card featured">
+          <div class="badge">Хит</div>
+          <h3>15 дней</h3><div class="price">150 ⭐</div>
+          <button class="btn btn-primary" onclick="buyPlan('premium_15')">Купить</button>
+        </div>
+        <div class="plan-card">
+          <h3>30 дней</h3><div class="price">250 ⭐</div>
+          <button class="btn btn-primary" onclick="buyPlan('premium_30')">Купить</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПРОФИЛЬ -->
+    <section class="screen" id="screen-profile">
+      <header class="header compact"><h2>👤 Профиль</h2></header>
+      <div class="profile-card">
+        <div class="avatar big" id="profAvatar">?</div>
+        <h2 id="profName">Гость</h2>
+        <p id="profId">ID: —</p>
+        <div class="badge" id="profPlan">Free</div>
+      </div>
+      <div class="actions vertical">
+        <button class="btn btn-secondary" onclick="copyRef()">🎁 Пригласить друга</button>
+        <button class="btn btn-secondary" onclick="openLink('https://t.me/DocuFlowAI')">📢 Наш канал</button>
+      </div>
+    </section>
+
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-nav="home" onclick="nav('home')">🏠<span>Главная</span></button>
+      <button class="nav-btn" data-nav="create" onclick="nav('create')">✨<span>Создать</span></button>
+      <button class="nav-btn" data-nav="docs" onclick="nav('docs')">📂<span>Файлы</span></button>
+      <button class="nav-btn" data-nav="premium" onclick="nav('premium')">💎<span>Premium</span></button>
+      <button class="nav-btn" data-nav="profile" onclick="nav('profile')">👤<span>Профиль</span></button>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
